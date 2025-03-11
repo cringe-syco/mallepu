@@ -113,3 +113,85 @@ def test_process_data():
 
         # Ensure write_df was called with the correct argument
         mock_storage.write_df.assert_called_once_with(output_path, expected_df)
+
+
+#############
+
+import pytest
+import pandas as pd
+from unittest.mock import MagicMock, patch
+from process_data import process_data
+from storage_grid import StorageGrid
+
+def test_process_data():
+    input_path = "input.csv"
+    output_path = "output.csv"
+
+    # Create a mock DataFrame for read_df to return
+    mock_df = pd.DataFrame({"existing_col": [1, 2, 3]})
+
+    # Create a MagicMock instance for StorageGrid
+    mock_storage = MagicMock(spec=StorageGrid)
+
+    with patch.object(StorageGrid, "__enter__", return_value=mock_storage), \
+         patch.object(StorageGrid, "__exit__", return_value=None), \
+         patch.object(StorageGrid, "read_df", return_value=mock_df) as mock_read, \
+         patch.object(StorageGrid, "write_df") as mock_write:
+
+        process_data(input_path, output_path)
+
+        # Assert read_df was called with correct arguments
+        mock_read.assert_called_once_with(input_path)
+
+        # Capture the DataFrame passed to write_df
+        args, _ = mock_write.call_args
+        written_df = args[1]  # The second argument is the DataFrame
+
+        # Assert the transformation happened correctly
+        expected_df = mock_df.copy()
+        expected_df["new_col"] = expected_df["existing_col"] * 2
+        pd.testing.assert_frame_equal(written_df, expected_df)
+
+        # Assert write_df was called with correct arguments
+        mock_write.assert_called_once_with(output_path, expected_df)
+
+        ############
+
+###########
+import pytest
+import pandas as pd
+from unittest.mock import MagicMock, patch
+from process_data import process_data
+from storage_grid import StorageGrid
+
+def test_process_data():
+    input_path = "input.csv"
+    output_path = "output.csv"
+
+    # Create a mock DataFrame for read_df to return
+    mock_df = pd.DataFrame({"existing_col": [1, 2, 3]})
+
+    # Create a MagicMock instance for StorageGrid
+    mock_storage = MagicMock(spec=StorageGrid)
+    mock_storage.read_df.return_value = mock_df  # Mock read_df return value
+
+    with patch("storage_grid.StorageGrid", return_value=mock_storage) as mock_grid:
+        process_data(input_path, output_path)
+
+        # Ensure read_df was called correctly
+        mock_storage.read_df.assert_called_once_with(input_path)
+
+        # Capture the DataFrame passed to write_df
+        args, _ = mock_storage.write_df.call_args
+        written_df = args[1]  # The second argument is the DataFrame
+
+        # Assert the transformation happened correctly
+        expected_df = mock_df.copy()
+        expected_df["new_col"] = expected_df["existing_col"] * 2
+        pd.testing.assert_frame_equal(written_df, expected_df)
+
+        # Ensure write_df was called with the correct argument
+        mock_storage.write_df.assert_called_once_with(output_path, expected_df)
+
+        # Ensure StorageGrid was instantiated once (credentials would be part of init)
+        mock_grid.assert_called_once()

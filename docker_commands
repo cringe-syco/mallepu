@@ -1,0 +1,135 @@
+#!/bin/bash
+
+# =====================================
+# === DOCKER INSTALLATION & SETUP ===
+# =====================================
+echo "🐳 Installing Docker..."
+sudo apt update -y
+sudo apt install -y docker.io
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+echo "✔️ Docker Installed!"
+echo ""
+
+# =====================================
+# === DOCKER COMMANDS ===
+# =====================================
+echo "🐳 Docker Basics"
+docker --version
+docker ps -a                     # List all containers
+docker images                     # List images
+docker info                        # Show system-wide Docker info
+echo ""
+
+echo "🐳 Running Containers"
+docker run hello-world             # Run a test container
+docker run -d --name mynginx -p 8080:80 nginx
+docker ps                          # List running containers
+docker logs mynginx                # View container logs
+echo ""
+
+echo "🐳 Managing Containers"
+docker stop mynginx                 # Stop a container
+docker start mynginx                 # Start a container
+docker restart mynginx               # Restart a container
+docker rm mynginx                     # Remove container
+docker rmi nginx                      # Remove image
+echo ""
+
+echo "🐳 Docker Volumes & Networks"
+docker volume create myvolume
+docker network create mynetwork
+docker network ls
+echo ""
+
+echo "🐳 Docker Compose"
+cat <<EOF > docker-compose.yml
+version: '3'
+services:
+  web:
+    image: nginx
+    ports:
+      - "8080:80"
+EOF
+docker-compose up -d
+docker-compose ps
+docker-compose down
+echo ""
+
+# =====================================
+# === KUBERNETES INSTALLATION & SETUP ===
+# =====================================
+echo "☸️ Installing Kubernetes..."
+sudo apt update -y
+sudo apt install -y kubectl
+kubectl version --client
+echo "✔️ Kubernetes Installed!"
+echo ""
+
+# =====================================
+# === KUBERNETES COMMANDS ===
+# =====================================
+echo "☸️ Kubernetes Cluster Info"
+kubectl cluster-info
+kubectl get nodes
+kubectl get pods -A
+echo ""
+
+echo "☸️ Deploying an App to Kubernetes"
+cat <<EOF > deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+EOF
+kubectl apply -f deployment.yaml
+kubectl get deployments
+kubectl get pods
+echo ""
+
+echo "☸️ Kubernetes Services"
+cat <<EOF > service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+EOF
+kubectl apply -f service.yaml
+kubectl get services
+echo ""
+
+echo "☸️ Scaling Applications"
+kubectl scale deployment nginx-deployment --replicas=5
+kubectl get pods
+echo ""
+
+echo "☸️ Debugging Kubernetes"
+kubectl logs -l app=nginx
+kubectl describe pod -l app=nginx
+kubectl exec -it $(kubectl get pods -l app=nginx -o jsonpath="{.items[0].metadata.name}") -- /bin/sh
+echo ""
+
+echo "✔️ Docker & Kubernetes Script Execution Completed!"

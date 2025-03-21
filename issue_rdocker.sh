@@ -44,3 +44,12 @@ echo "export CONDA_PREFIX=$CONDA_PREFIX" >> ~/.Renviron
 echo "export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:\$LD_LIBRARY_PATH" >> ~/.Renviron
 
 echo "✅ Conda environment setup completed!"
+
+
+#######
+before_script:
+  - export CONDA_PREFIX=/opt/conda
+  - export R_HOME=$CONDA_PREFIX/envs/r_env/lib/R
+  - export R_LIBS_USER=$CONDA_PREFIX/envs/r_env/lib/R/library
+  - export PATH=$CONDA_PREFIX/bin:$PATH
+  - export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH

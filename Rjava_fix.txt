@@ -1,0 +1,107 @@
+If .jinit() is hanging indefinitely, it almost always points to a misconfiguration or conflict in how rJava is linking to Java. Here’s how to methodically debug and fix it — especially given you’re on Domino, using Docker, and running with R 4.1 and system-installed Java 1.8.
+
+
+---
+
+Checklist to Fix .jinit() Hanging
+
+1. Verify Java installation and permissions
+
+Inside your Domino job (or Docker run), try:
+
+echo $JAVA_HOME
+echo $LD_LIBRARY_PATH
+ls -l $JAVA_HOME/lib/server/libjvm.so
+
+Make sure:
+
+libjvm.so exists and is readable
+
+Directory has x (execute/traverse) permissions
+
+
+
+---
+
+2. Manually verify rJava's linkage
+
+Run this in your Docker container or Domino session:
+
+ldd $(Rscript -e 'cat(system.file("libs", .Platform$r_arch, "rJava.so", package="rJava"))')
+
+Look for this line in the output:
+
+libjvm.so => /usr/lib/jvm/java-1.8.0-openjdk/lib/server/libjvm.so
+
+If it says not found, or links to a wrong path, your LD_LIBRARY_PATH is wrong at runtime — even if it looked okay during build.
+
+
+---
+
+3. Re-run javareconf in container (Important!)
+
+Even if you install Java system-wide and set JAVA_HOME, rJava must be compiled against it:
+
+R CMD javareconf
+
+Run this after setting JAVA_HOME and LD_LIBRARY_PATH in your Dockerfile.
+
+
+---
+
+4. Run .jinit() with debug output
+
+In R:
+
+library(rJava)
+.jinit(parameters = "-Xrs", silent = FALSE)
+
+If it still hangs — try adding:
+
+.jinit(force.init = TRUE, parameters = "-Xrs")
+
+You can also enable Java debug logging (prints native errors):
+
+options(java.parameters = "-verbose:jni")
+
+
+---
+
+5. Strace the process (last resort)
+
+If you can shell into the container, use:
+
+strace -f -e openat Rscript -e 'library(rJava); .jinit()'
+
+This will show what file it’s stuck waiting on, often a missing or mislinked .so.
+
+
+---
+
+6. Common causes of .jinit() hang
+
+Cause	Fix
+
+LD_LIBRARY_PATH missing /lib/server	Add it explicitly
+Wrong JAVA_HOME	Set to base Java install, e.g. /usr/lib/jvm/java-1.8.0-openjdk
+rJava compiled with one Java, run with another	Re-run R CMD javareconf
+Conflicting Java versions in $PATH, $LD_LIBRARY_PATH	Sanitize these in Dockerfile or R profile
+
+
+
+---
+
+Final Dockerfile Block (Best Practice)
+
+Here’s a minimal snippet to make rJava stable with system Java in Docker:
+
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk
+ENV LD_LIBRARY_PATH=/usr/lib/jvm/java-1.8.0-openjdk/lib/server:$LD_LIBRARY_PATH
+RUN R CMD javareconf
+RUN Rscript -e 'install.packages("rJava", repos="https://cloud.r-project.org")'
+
+
+---
+
+Let me know what ldd and .jinit() output looks like, and I’ll pinpoint the root issue.
+

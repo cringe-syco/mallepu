@@ -130,4 +130,4 @@ def test_performance():
     assert not new_only_df.empty
 
     # Check if function runs in under 2 seconds for 1M rows
-    assert (end_time - start_time) < 2.0, "
+    assert (end_time - start_time) < 2.0

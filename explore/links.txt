@@ -1,0 +1,3 @@
+https://github.com/graviraja/MLOps-Basics
+https://scikit-learn.org/stable/
+https://huggingface.co/learn/llm-course/chapter1/1

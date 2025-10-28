@@ -208,3 +208,4 @@ def download_video(video_url, outdir=Path("downloads"), fmt='bestvideo+bestaudio
 # https://www.youtube.com/watch?v=SBeMlJvijbQ - Statistical Learning: 13.Py Multiple Testing I 2023
 # https://www.youtube.com/watch?v=c9-zvw3AY3Q - Statistical Learning: 13.Py False Discovery Rate I 2023
 # https://www.youtube.com/watch?v=mMFT44ra-Rg - Statistical Learning: 13.Py Multiple Testing and Resampling I 2023
+# https://www.youtube.com/watch?v=0g-XL0WV2xo - Full Ml course by Ayush https://youtu.be/0g-XL0WV2xo?si=Zse2IlWp9LnnmaN0

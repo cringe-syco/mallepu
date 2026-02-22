@@ -96,6 +96,7 @@ def download_video(video_url, outdir=Path("downloads"), fmt='bestvideo+bestaudio
 
 # Example call:
 # download_video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+# https://www.youtube.com/watch?v=SR5NYCdzKkc - Learn FastAPI using project
 
 # yt-dlp -f "best[ext=mp4]" -o "%(title)s - %(id)s.%(ext)s" "https://www.youtube.com/watch?v=mMFT44ra-Rg"
 
